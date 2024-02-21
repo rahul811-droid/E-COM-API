@@ -6,7 +6,6 @@ export default class UserModel{
         this.name=name;
         this.email=email;
         this.password=password;
-        
         this.type=type;
         this.id=id
     }

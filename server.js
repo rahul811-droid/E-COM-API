@@ -1,6 +1,7 @@
 import "./env.js"
 import express, { application } from 'express'
 import swagger from 'swagger-ui-express' ;
+import mongoose from "mongoose";
 
 import  ProductRouter from './src/features/product/product.routes.js'
 import  bodyParser from 'body-parser'
@@ -13,6 +14,9 @@ import cors from 'cors' ;
 import loggerMiddleware from './src/features/middlewares/logger.middleware.js';
 import { ApplicationError } from './src/error-handler/applicationError.js';
 import {connectToMongoDB} from './src/database/mongodb.js';
+import orderRouter from "./src/features/order/order.routes.js";
+import { connectUsingMongoose } from "./src/database/mongoose.cofig.js";
+import likeRouter from "./src/features/like/likes.routes.js";
 
 // create server 
 const server = express();
@@ -34,12 +38,17 @@ const server = express();
 server.use(bodyParser.json());
 // server.use('/api',swagger.serve,swagger.setup(apiDocs));
 server.use(loggerMiddleware);
+
+server.use('/api/orders',jwtAuth,orderRouter);
+
+
 server.use(
     '/api/products',
     jwtAuth,
     ProductRouter
   );
 server.use('/api/users',userRouter);
+server.use('/api/likes',jwtAuth,likeRouter);
 server.use('/api/cartItems',loggerMiddleware,jwtAuth,cartItemRouter);
 // 2 default request handler 
 
@@ -47,13 +56,22 @@ server.get('/',(req,res)=>{
 res.send("welcome to Ecommerce APIs");
 })
 // 3 error handle middleware 
-server.use((err,req,res,next)=>{
-  if(err instanceof ApplicationError){
-    res.status(err.code).send(err.message);
-  }
+server.use((err, req, res, next) => {
   console.log(err);
-  res.status(500).send("Opps! somethig went wrong... Plz try again later")
-})
+  if(err instanceof mongoose.Error.ValidationError){
+    return res.status(400).send(err.message);
+  }
+  if (err instanceof ApplicationError) {
+    return res.status(err.code).send(err.message);
+  }
+
+  // server errors.
+  res
+    .status(500)
+    .send(
+      'Something went wrong, please try later'
+    );
+});
 
 // 4 middleware to handle 400 request 
 
@@ -64,7 +82,9 @@ server.use((req,res)=>{
 
 server.listen(4000,()=>{
     console.log("server is working fine in 4000");
-    connectToMongoDB();
+    // connectToMongoDB();
+
+    connectUsingMongoose()
    
 
 });

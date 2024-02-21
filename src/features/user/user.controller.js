@@ -1,19 +1,55 @@
 import UserModel from "./user.model.js" ;
 import jwt from 'jsonwebtoken' ;
-import UserRepository from "./user.repository.js";
+// import UserRepository from "./user.repository_old.js";
+import UserRepository from "./user.repository.js"
 import bcrypt from 'bcrypt' ;
 
 export default class UserController{
     constructor(){
         this.userRepository = new UserRepository();
     }
-    async signUp(req,res){
+
+    async resetPassword(req,res,next){
+        const {newPassword} = req.body;
+        const hashedPassword =await  bcrypt.hash(newPassword,12);
+        const userID = req.userID;
+        try{
+            await this.userRepository.resetPassword(userID,hashedPassword);
+            res.status(200).send("password is updated")
+        }
+        catch(err){
+            console.log(err);
+            console.log("passing error to middleware");
+            next(err);
+
+
+        }
+
+    }
+
+
+    async signUp(req,res,next){
         const {name,email,password,type} = req.body;
-        const hashedPassword =await  bcrypt.hash(password,12);
-        const user=new UserModel(name,email,hashedPassword,type);
+        try{
+
+               const hashedPassword =await  bcrypt.hash(password,12);
+        const user=new UserModel(
+            name,
+            email,
+            hashedPassword,
+            // password,
+            type
+            
+            );
 
         await this.userRepository.signUp(user);
         res.status(201).send(user)
+        }
+        catch(err){
+            console.log(err)
+            next(err) 
+        }
+     
     }
     
 
@@ -36,7 +72,7 @@ export default class UserController{
                 },
                 process.env.JWT_SECRET,
                 {
-                    expiresIn:'1h',
+                    expiresIn:'15h',
                 }
                 )
                 // 4 send token 

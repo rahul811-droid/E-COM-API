@@ -7,8 +7,8 @@ import {upload} from "../../features/middlewares/fileupload.middleware.js";
 
 const cartItemRouter = express.Router()
 const cartItemController = new CartItemController();
-cartItemRouter.post('/',cartItemController.add);
-cartItemRouter.get('/',cartItemController.get);
-cartItemRouter.delete('/:id',cartItemController.delete);
+cartItemRouter.post('/',(req,res,next)=>{cartItemController.add(req,res,next)});
+cartItemRouter.get('/',(req,res,next)=>{cartItemController.get(req,res,next)});
+cartItemRouter.delete('/:id',(req,res,next)=>{cartItemController.delete(req,res,next)});
 
 export default cartItemRouter;

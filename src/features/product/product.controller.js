@@ -18,9 +18,11 @@ export default class ProductController {
 
   async addProduct(req, res) {
     try{
-    const { name, price, sizes } = req.body;
+    const { name, price, sizes,categories } = req.body;
+    console.log(req.body)
     const newProduct = new ProductModel(name,null, parseFloat(price),req.file.filename,
-     null, sizes.split(',')
+    categories, sizes.split(',')
+     
     );
 
     const createdProduct = await this.productRepository.add(newProduct);
@@ -33,7 +35,7 @@ export default class ProductController {
 async rateProduct(req, res, next) {
   try{
     const userID = req.userID;
-    console.log(userID);
+    // console.log(userID);
     const productID = req.body.productID;
     const rating = req.body.rating;
 
@@ -55,7 +57,8 @@ async rateProduct(req, res, next) {
   async getOneProduct(req, res) {
 
     try{
-      const id = req.params.id;
+      const id = req.params.id;     
+      
       const product = await this.productRepository.get(id);
       if (!product) {
         res.status(404).send('Product not found');
@@ -74,11 +77,12 @@ async rateProduct(req, res, next) {
     
     const minPrice = req.query.minPrice;
     const maxPrice = req.query.maxPrice;
-    const category = req.query.category;
+    const categories= req.query.categories;
+    
     const result = await this.productRepository.filter(
       minPrice,
-      maxPrice,
-      category
+      // maxPrice,
+      categories  
     );
     res.status(200).send(result);
     }
@@ -87,5 +91,16 @@ async rateProduct(req, res, next) {
       return res.status(200).send("Something went wrong");
     }
 
+  }
+
+  async averagePrice(req,res,next){
+    try{
+
+      const result =await this.productRepository.averageProductPricePerCategory();
+      res.status(200).send(result);
+    } catch(err){
+      console.log(err);
+      return res.status(200).send("Something went wrong");
+    }
   }
 }
