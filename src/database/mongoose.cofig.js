@@ -13,7 +13,7 @@ export const connectUsingMongoose = async()=>{
             useNewUrlParser:true,
             useUnifiedTopology:true
         });
-        console.log("Mongodb succesfull connected useing mongose")
+        console.log("Mongodb succesfull connected useing mongoose")
         addCategories();
     }catch(err){
         console.log("Error while connecting to db");
